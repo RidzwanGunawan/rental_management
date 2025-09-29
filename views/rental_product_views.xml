@@ -1,0 +1,273 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    
+    <!-- ========== PRODUCT VIEWS ========== -->
+    
+    <!-- Search View -->
+    <record id="view_rental_product_search" model="ir.ui.view">
+        <field name="name">rental.product.search</field>
+        <field name="model">rental.product</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name" string="Product"
+                       filter_domain="['|', '|', ('name', 'ilike', self), ('product_code', 'ilike', self), ('brand', 'ilike', self)]"/>
+                <field name="brand"/>
+                <field name="model"/>
+                <field name="serial_number"/>
+                <field name="location"/>
+                
+                <!-- Filters -->
+                <filter name="available" string="Available" domain="[('status', '=', 'available')]"/>
+                <filter name="rented" string="Rented" domain="[('status', '=', 'rented')]"/>
+                <filter name="maintenance" string="Under Maintenance" domain="[('status', '=', 'maintenance')]"/>
+                <filter name="damaged" string="Damaged" domain="[('status', '=', 'damaged')]"/>
+                <filter name="active_products" string="Active" domain="[('active', '=', True)]"/>
+                <filter name="need_maintenance" string="Need Maintenance" 
+                        domain="[('next_maintenance_date', '&lt;=', context_today().strftime('%Y-%m-%d'))]"/>
+                
+                <!-- Group By -->
+                <group expand="0" string="Group By">
+                    <filter name="group_status" string="Status" context="{'group_by': 'status'}"/>
+                    <filter name="group_brand" string="Brand" context="{'group_by': 'brand'}"/>
+                    <filter name="group_condition" string="Condition" context="{'group_by': 'condition'}"/>
+                    <filter name="group_location" string="Location" context="{'group_by': 'location'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- List View -->
+    <record id="view_rental_product_tree" model="ir.ui.view">
+        <field name="name">rental.product.tree</field>
+        <field name="model">rental.product</field>
+        <field name="arch" type="xml">
+            <list decoration-success="status == 'available'" 
+                  decoration-warning="status == 'rented'" 
+                  decoration-danger="status == 'damaged'"
+                  decoration-muted="status == 'retired'">
+                <field name="product_code"/>
+                <field name="name"/>
+                <field name="brand"/>
+                <field name="model"/>
+                <field name="price_per_day" widget="monetary"/>
+                <field name="condition" widget="badge"
+                       decoration-success="condition == 'excellent'"
+                       decoration-info="condition == 'good'"
+                       decoration-warning="condition == 'fair'"
+                       decoration-danger="condition == 'poor'"/>
+                <field name="status" widget="badge"
+                       decoration-success="status == 'available'"
+                       decoration-warning="status == 'rented'"
+                       decoration-danger="status in ['maintenance', 'damaged']"/>
+                <field name="location"/>
+                <field name="rental_count"/>
+                <field name="utilization_rate" widget="percentage"/>
+                <field name="next_maintenance_date"/>
+                <field name="status" invisible="1"/>
+                
+                <!-- Action Buttons -->
+                <button name="action_set_maintenance" type="object" string="Set Maintenance" icon="fa-wrench"/>
+                <button name="action_set_available" type="object" string="Set Available" icon="fa-check"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Form View -->
+    <record id="view_rental_product_form" model="ir.ui.view">
+        <field name="name">rental.product.form</field>
+        <field name="model">rental.product</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <!-- Status Bar -->
+                    <field name="status" widget="statusbar" statusbar_visible="available,rented,maintenance,damaged"/>
+                    
+                    <!-- Action Buttons -->
+                    <button name="action_set_maintenance" type="object" string="Set Maintenance" class="btn-warning"/>
+                    <button name="action_set_available" type="object" string="Set Available" class="btn-success"/>
+                    <button name="action_view_rental_history" type="object" string="View Rental History" class="btn-primary"/>
+                </header>
+                
+                <sheet>
+                    <!-- Smart Buttons -->
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_rental_history" type="object" class="oe_stat_button" icon="fa-history">
+                            <field name="rental_count" widget="statinfo" string="Rentals"/>
+                        </button>
+                        <!-- FIXED: active_id → id -->
+                        <button name="%(action_rental_orders)d" type="action" class="oe_stat_button" icon="fa-calendar" 
+                                context="{'search_default_product_id': id, 'search_default_ongoing': 1}">
+                            <div class="o_field_widget o_stat_info">
+                                <span class="o_stat_value">
+                                    <field name="status" readonly="1"/>
+                                </span>
+                                <span class="o_stat_text">Current Status</span>
+                            </div>
+                        </button>
+                    </div>
+                    
+                    <!-- Product Image (disabled to avoid error) -->
+                    <!-- <field name="image_1920" widget="image" class="oe_avatar"
+                           options="{'preview_image': 'image_128'}"/> -->
+                    
+                    <!-- Main Info -->
+                    <!-- <div class="oe_title">
+                        <label for="name" class="oe_edit_only"/>
+                        <h1><field name="name" placeholder="Product Name"/></h1>
+                        <h3>
+                            <field name="product_code" readonly="1" class="text-muted"/>
+                        </h3>
+                    </div> -->
+                    
+                    <!-- Basic Info -->
+                    <group>
+                        <group string="Basic Information">
+                            <field name="brand"/>
+                            <field name="model"/>
+                            <field name="serial_number"/>
+                            <field name="condition" widget="selection"/>
+                            <field name="active"/>
+                        </group>
+                        <group string="Physical Attributes">
+                            <field name="weight"/>
+                            <field name="dimensions"/>
+                            <field name="color"/>
+                            <field name="year_manufactured"/>
+                        </group>
+                    </group>
+                    
+                    <!-- Tabs -->
+                    <notebook>
+                        <!-- Pricing Tab -->
+                        <page string="Pricing">
+                            <group>
+                                <group string="Daily Rates">
+                                    <field name="price_per_day" widget="monetary"/>
+                                    <field name="weekend_price" widget="monetary"/>
+                                    <field name="holiday_price" widget="monetary"/>
+                                </group>
+                                <group string="Package Rates">
+                                    <field name="price_per_week" widget="monetary" readonly="1"/>
+                                    <field name="price_per_month" widget="monetary" readonly="1"/>
+                                </group>
+                            </group>
+                            
+                            <group>
+                                <group string="Additional Charges">
+                                    <field name="security_deposit" widget="monetary"/>
+                                    <field name="insurance_required"/>
+                                    <field name="insurance_cost_per_day" widget="monetary"/>
+                                </group>
+                                <group string="Rental Constraints">
+                                    <field name="min_rental_days"/>
+                                    <field name="max_rental_days"/>
+                                    <field name="advance_booking_days"/>
+                                </group>
+                            </group>
+                        </page>
+                        
+                        <!-- Maintenance Tab -->
+                        <page string="Maintenance">
+                            <group>
+                                <group string="Maintenance Schedule">
+                                    <field name="last_maintenance_date"/>
+                                    <field name="next_maintenance_date" class="text-warning"/>
+                                    <field name="maintenance_interval_days"/>
+                                </group>
+                                <group string="Purchase Information">
+                                    <field name="purchase_date"/>
+                                    <field name="purchase_price" widget="monetary"/>
+                                    <field name="supplier"/>
+                                    <field name="warranty_expiry"/>
+                                </group>
+                            </group>
+                        </page>
+                        
+                        <!-- Statistics Tab -->
+                        <page string="Statistics">
+                            <group>
+                                <group string="Performance Metrics">
+                                    <field name="rental_count" readonly="1"/>
+                                    <field name="total_rental_days" readonly="1"/>
+                                    <field name="total_revenue" widget="monetary" readonly="1"/>
+                                    <field name="utilization_rate" widget="percentage" readonly="1"/>
+                                </group>
+                                <group string="Location">
+                                    <field name="location"/>
+                                </group>
+                            </group>
+                        </page>
+                        
+                        <!-- Instructions Tab -->
+                        <page string="Instructions">
+                            <group>
+                                <field name="setup_instructions"/>
+                                <field name="safety_instructions"/>
+                                <field name="return_instructions"/>
+                            </group>
+                        </page>
+                        
+                        <!-- Description & Notes -->
+                        <page string="Description">
+                            <field name="description"/>
+                            <separator string="Internal Notes"/>
+                            <field name="internal_notes"/>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Kanban View -->
+    <record id="view_rental_product_kanban" model="ir.ui.view">
+        <field name="name">rental.product.kanban</field>
+        <field name="model">rental.product</field>
+        <field name="arch" type="xml">
+            <kanban>
+                <field name="name"/>
+                <field name="product_code"/>
+                <field name="brand"/>
+                <field name="price_per_day"/>
+                <field name="status"/>
+                <field name="condition"/>
+                <field name="rental_count"/>
+                <!-- <field name="image_128"/> -->
+                <templates>
+                    <t t-name="kanban-box">
+                        <div class="oe_kanban_card oe_kanban_global_click">
+                            <div class="o_kanban_image">
+                                <img t-att-src="kanban_image('rental.product', 'image_128', record.id.raw_value)" 
+                                     alt="Product Image" class="o_image_64_contain"/>
+                            </div>
+                            <div class="oe_kanban_details">
+                                <strong class="o_kanban_record_title">
+                                    <field name="name"/>
+                                </strong>
+                                <div class="o_kanban_record_subtitle">
+                                    <span t-if="record.product_code.value" class="text-muted">[<t t-esc="record.product_code.value"/>]</span>
+                                    <span t-if="record.brand.value"> - <t t-esc="record.brand.value"/></span>
+                                </div>
+                                <div class="oe_kanban_bottom_left">
+                                    <span class="o_kanban_record_title">$<t t-esc="record.price_per_day.value"/>/day</span>
+                                </div>
+                                <div class="oe_kanban_bottom_right">
+                                    <span class="badge badge-pill" 
+                                          t-att-class="record.status.value == 'available' ? 'badge-success' : 
+                                                     record.status.value == 'rented' ? 'badge-warning' : 
+                                                     record.status.value == 'maintenance' ? 'badge-info' : 'badge-danger'">
+                                        <t t-esc="record.status.value"/>
+                                    </span>
+                                    <span t-if="record.rental_count.value > 0" class="badge badge-pill badge-secondary">
+                                        <t t-esc="record.rental_count.value"/> rentals
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+</odoo>

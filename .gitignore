@@ -1,0 +1,13 @@
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Virtualenv (jangan sampai ikut kepush)
+venv/
+.env/
+
+# Mac / sistem
+.DS_Store
+Thumbs.db

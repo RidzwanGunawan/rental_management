@@ -1,0 +1,4 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_rental_product_all,rental.product.all,model_rental_product,,1,1,1,1
+access_rental_customer_all,rental.customer.all,model_rental_customer,,1,1,1,1
+access_rental_order_all,rental.order.all,model_rental_order,,1,1,1,1

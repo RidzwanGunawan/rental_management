@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ========== ACTIONS ========== -->
+
+    <!-- Customer Actions -->
+    <record id="action_rental_customers" model="ir.actions.act_window">
+        <field name="name">Rental Customers</field>
+        <field name="res_model">rental.customer</field>
+        <field name="view_mode">kanban,list,form</field>
+        <field name="context">{'search_default_active_customers': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create your first customer!
+            </p>
+            <p>
+                Manage your rental customers here. Track their rental history,
+                contact information, and payment details.
+            </p>
+        </field>
+    </record>
+
+    <!-- Product Actions -->
+    <record id="action_rental_products" model="ir.actions.act_window">
+        <field name="name">Rental Products</field>
+        <field name="res_model">rental.product</field>
+        <field name="view_mode">kanban,list,form</field>
+        <field name="context">{'search_default_available': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Add your first rental product!
+            </p>
+            <p>
+                Manage your rental inventory here. Set pricing, track maintenance,
+                and monitor product performance.
+            </p>
+        </field>
+    </record>
+
+    <!-- Order Actions -->
+    <record id="action_rental_orders" model="ir.actions.act_window">
+        <field name="name">Rental Orders</field>
+        <field name="res_model">rental.order</field>
+        <field name="view_mode">list,kanban,form,calendar,pivot,graph</field>
+        <field name="context">{}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create your first rental order!
+            </p>
+            <p>
+                Manage rental orders from draft to completion. Track payments,
+                schedules, and customer communications.
+            </p>
+        </field>
+    </record>
+
+    <!-- Specific Order Views -->
+    <record id="action_rental_orders_draft" model="ir.actions.act_window">
+        <field name="name">Draft Orders</field>
+        <field name="res_model">rental.order</field>
+        <field name="view_mode">list,form</field>
+        <field name="domain">[('state', '=', 'draft')]</field>
+        <field name="context">{'search_default_draft': 1}</field>
+    </record>
+
+    <record id="action_rental_orders_ongoing" model="ir.actions.act_window">
+        <field name="name">Ongoing Rentals</field>
+        <field name="res_model">rental.order</field>
+        <field name="view_mode">list,kanban,calendar,form</field>
+        <field name="domain">[('state', '=', 'ongoing')]</field>
+        <field name="context">{'search_default_ongoing': 1}</field>
+    </record>
+
+    <record id="action_rental_orders_overdue" model="ir.actions.act_window">
+        <field name="name">Overdue Rentals</field>
+        <field name="res_model">rental.order</field>
+        <field name="view_mode">list,form</field>
+        <field name="domain">[('end_date', '&lt;', context_today().strftime('%Y-%m-%d')), ('state', '=', 'ongoing')]</field>
+        <field name="context">{'search_default_overdue': 1}</field>
+    </record>
+
+    <record id="action_rental_schedule" model="ir.actions.act_window">
+        <field name="name">Rental Schedule</field>
+        <field name="res_model">rental.order</field>
+        <field name="view_mode">calendar,list,form</field>
+        <field name="domain">[('state', 'in', ['confirmed', 'ongoing'])]</field>
+        <field name="context">{}</field>
+    </record>
+
+    <!-- Reports/Analytics Actions -->
+    <record id="action_rental_analytics" model="ir.actions.act_window">
+        <field name="name">Rental Analytics</field>
+        <field name="res_model">rental.order</field>
+        <field name="view_mode">pivot,graph,list</field>
+        <field name="domain">[('state', 'in', ['confirmed', 'ongoing', 'done'])]</field>
+        <field name="context">{'search_default_group_start_date': 1}</field>
+    </record>
+
+    <!-- Product Analytics -->
+    <record id="action_rental_product_performance" model="ir.actions.act_window">
+        <field name="name">Product Performance</field>
+        <field name="res_model">rental.product</field>
+        <field name="view_mode">list,form</field>
+        <field name="context">{'search_default_group_status': 1}</field>
+    </record>
+
+    <!-- ========== MAIN MENU STRUCTURE ========== -->
+
+    <!-- Root Menu -->
+    <menuitem id="menu_rental_root" name="Rental Management" sequence="10"/>
+
+    <!-- Operations Menu -->
+    <menuitem id="menu_rental_operations" name="Operations" parent="menu_rental_root" sequence="10"/>
+
+    <menuitem id="menu_rental_orders" name="Rental Orders" parent="menu_rental_operations" action="action_rental_orders" sequence="10"/>
+
+    <menuitem id="menu_rental_orders_draft" name="Draft Orders" parent="menu_rental_operations" action="action_rental_orders_draft" sequence="11"/>
+
+    <menuitem id="menu_rental_orders_ongoing" name="Ongoing Rentals" parent="menu_rental_operations" action="action_rental_orders_ongoing" sequence="12"/>
+
+    <menuitem id="menu_rental_orders_overdue" name="Overdue Rentals" parent="menu_rental_operations" action="action_rental_orders_overdue" sequence="13"/>
+
+    <!-- Planning Menu -->
+    <menuitem id="menu_rental_planning" name="Planning" parent="menu_rental_root" sequence="20"/>
+
+    <menuitem id="menu_rental_schedule" name="Rental Schedule" parent="menu_rental_planning" action="action_rental_schedule" sequence="10"/>
+
+    <!-- Master Data Menu -->
+    <menuitem id="menu_rental_master" name="Master Data" parent="menu_rental_root" sequence="30"/>
+
+    <menuitem id="menu_rental_products" name="Products" parent="menu_rental_master" action="action_rental_products" sequence="10"/>
+
+    <menuitem id="menu_rental_customers" name="Customers" parent="menu_rental_master" action="action_rental_customers" sequence="20"/>
+
+    <!-- Reports Menu -->
+    <menuitem id="menu_rental_reports" name="Reports" parent="menu_rental_root" sequence="40"/>
+
+    <menuitem id="menu_rental_analytics" name="Rental Analytics" parent="menu_rental_reports" action="action_rental_analytics" sequence="10"/>
+
+    <menuitem id="menu_rental_product_performance" name="Product Performance" parent="menu_rental_reports" action="action_rental_product_performance" sequence="20"/>
+
+    <!-- Configuration Menu -->
+    <menuitem id="menu_rental_config" name="Configuration" parent="menu_rental_root" sequence="50" groups="base.group_system"/>
+
+</odoo>

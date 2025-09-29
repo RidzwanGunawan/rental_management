@@ -1,0 +1,282 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+  <!-- ========== ORDER VIEWS ========== -->
+
+  <!-- Search View -->
+  <record id="view_rental_order_search" model="ir.ui.view">
+    <field name="name">rental.order.search</field>
+    <field name="model">rental.order</field>
+    <field name="arch" type="xml">
+      <search>
+        <field name="name" string="Order" filter_domain="[('name', 'ilike', self)]"/>
+        <field name="customer_id" string="Customer"/>
+        <field name="product_id" string="Product"/>
+        <field name="user_id" string="Responsible"/>
+
+        <!-- Filters -->
+        <filter name="draft" string="Draft" domain="[('state', '=', 'draft')]"/>
+        <filter name="confirmed" string="Confirmed" domain="[('state', '=', 'confirmed')]"/>
+        <filter name="ongoing" string="Ongoing" domain="[('state', '=', 'ongoing')]"/>
+        <filter name="returned" string="Returned" domain="[('state', '=', 'returned')]"/>
+        <filter name="done" string="Done" domain="[('state', '=', 'done')]"/>
+        <filter name="cancelled" string="Cancelled" domain="[('state', '=', 'cancelled')]"/>
+
+        <separator/>
+        <filter name="today" string="Starting Today" domain="[('start_date', '=', context_today())]"/>
+        <filter name="this_week" string="This Week" domain="[('start_date', '&gt;=', (context_today() - datetime.timedelta(days=context_today().weekday())).strftime('%Y-%m-%d')),
+                                ('start_date', '&lt;', (context_today() + datetime.timedelta(days=7-context_today().weekday())).strftime('%Y-%m-%d'))]"/>
+        <filter name="overdue" string="Overdue" domain="[('end_date', '&lt;', context_today().strftime('%Y-%m-%d')), ('state', '=', 'ongoing')]"/>
+        <filter name="ending_soon" string="Ending Soon" domain="[('end_date', '&lt;=', (context_today() + datetime.timedelta(days=3)).strftime('%Y-%m-%d')), ('state', '=', 'ongoing')]"/>
+
+        <separator/>
+        <filter name="unpaid" string="Unpaid" domain="[('payment_status', '=', 'unpaid')]"/>
+        <filter name="partial_paid" string="Partially Paid" domain="[('payment_status', '=', 'partial')]"/>
+        <filter name="paid" string="Fully Paid" domain="[('payment_status', '=', 'paid')]"/>
+
+        <!-- Group By -->
+        <group expand="0" string="Group By">
+          <filter name="group_customer" string="Customer" context="{'group_by': 'customer_id'}"/>
+          <filter name="group_product" string="Product" context="{'group_by': 'product_id'}"/>
+          <filter name="group_state" string="Status" context="{'group_by': 'state'}"/>
+          <filter name="group_start_date" string="Start Date" context="{'group_by': 'start_date'}"/>
+          <filter name="group_responsible" string="Responsible" context="{'group_by': 'user_id'}"/>
+        </group>
+      </search>
+    </field>
+  </record>
+
+  <!-- List View -->
+  <record id="view_rental_order_tree" model="ir.ui.view">
+    <field name="name">rental.order.tree</field>
+    <field name="model">rental.order</field>
+    <field name="arch" type="xml">
+      <list decoration-info="state == 'confirmed'" decoration-warning="state == 'ongoing'" decoration-success="state == 'done'" decoration-danger="state == 'cancelled'" decoration-muted="state == 'draft'">
+        <field name="name"/>
+        <field name="customer_id"/>
+        <field name="product_id"/>
+        <field name="start_date"/>
+        <field name="end_date"/>
+        <field name="rental_days"/>
+        <field name="state" widget="badge"/>
+        <field name="payment_status" widget="badge"/>
+        <field name="total_price" widget="monetary"/>
+        <field name="user_id" widget="many2one_avatar_user"/>
+
+        <!-- Buttons tanpa attrs -->
+        <button name="action_confirm" type="object" string="Confirm" icon="fa-check" invisible="state != 'draft'"/>
+        <button name="action_start_rental" type="object" string="Start" icon="fa-play" invisible="state != 'confirmed'"/>
+        <button name="action_return" type="object" string="Return" icon="fa-undo" invisible="state != 'ongoing'"/>
+        <button name="action_done" type="object" string="Done" icon="fa-check-circle" invisible="state != 'returned'"/>
+      </list>
+    </field>
+  </record>
+
+  <!-- Form View -->
+  <record id="view_rental_order_form" model="ir.ui.view">
+    <field name="name">rental.order.form</field>
+    <field name="model">rental.order</field>
+    <field name="arch" type="xml">
+      <form>
+        <header>
+          <field name="state" widget="statusbar" statusbar_visible="draft,confirmed,ongoing,returned,done"/>
+
+          <button name="action_confirm" type="object" string="Confirm Order" class="btn-primary" invisible="state != 'draft'"/>
+          <button name="action_start_rental" type="object" string="Start Rental" class="btn-success" invisible="state != 'confirmed'"/>
+          <button name="action_return" type="object" string="Return Product" class="btn-warning" invisible="state != 'ongoing'"/>
+          <button name="action_done" type="object" string="Complete Rental" class="btn-primary" invisible="state != 'returned'"/>
+          <button name="action_cancel" type="object" string="Cancel" class="btn-secondary" invisible="state in ['done','cancelled']"/>
+          <button name="action_reset_to_draft" type="object" string="Reset to Draft" class="btn-light" invisible="state != 'cancelled'"/>
+        </header>
+
+        <sheet>
+          <div class="oe_button_box" name="button_box">
+            <button name="action_register_payment" type="object" class="oe_stat_button" icon="fa-money" invisible="state in ['draft','cancelled']">
+              <div class="o_field_widget o_stat_info">
+                <span class="o_stat_value">
+                  <field name="payment_status" readonly="1" widget="badge"/>
+                </span>
+                <span class="o_stat_text">Payment</span>
+              </div>
+            </button>
+          </div>
+
+          <div class="oe_title">
+            <label for="name" class="oe_edit_only"/>
+            <h1>
+              <field name="name" readonly="1"/>
+            </h1>
+          </div>
+
+          <group>
+            <group string="Customer Information">
+              <field name="customer_id" options="{'no_create': True}"/>
+              <field name="user_id"/>
+            </group>
+            <group string="Rental Details">
+              <field name="product_id" options="{'no_create': True}" domain="[('status','=','available')]" readonly="state != 'draft'"/>
+              <field name="start_date" readonly="state != 'draft'"/>
+              <field name="end_date" readonly="state != 'draft'"/>
+              <field name="actual_return_date" invisible="state not in ['returned','done']"/>
+            </group>
+          </group>
+
+          <notebook>
+            <page string="Pricing">
+              <group>
+                <group string="Rental Calculation">
+                  <field name="price_per_day" widget="monetary" readonly="1"/>
+                  <field name="rental_days" readonly="1"/>
+                  <field name="subtotal" widget="monetary" readonly="1"/>
+                </group>
+                <group string="Additional Charges">
+                  <field name="tax_amount" widget="monetary" readonly="1"/>
+                  <field name="insurance_fee" widget="monetary" readonly="1"/>
+                  <field name="late_fee" widget="monetary" invisible="late_fee == 0"/>
+                  <field name="damage_fee" widget="monetary"/>
+                </group>
+              </group>
+
+              <group>
+                <group string="Deposit">
+                  <field name="deposit_amount" widget="monetary" readonly="1"/>
+                </group>
+                <group string="Total Amount">
+                  <field name="total_price" widget="monetary" readonly="1" class="oe_subtotal_footer_separator"/>
+                </group>
+              </group>
+            </page>
+
+            <page string="Payment Information">
+              <group>
+                <group string="Payment Status">
+                  <field name="payment_status" widget="selection"/>
+                  <field name="paid_amount" widget="monetary"/>
+                  <field name="remaining_amount" widget="monetary" readonly="1"/>
+                </group>
+              </group>
+            </page>
+
+            <page string="Notes">
+              <group>
+                <field name="notes" string="Customer Notes"/>
+                <field name="internal_notes" string="Internal Notes"/>
+                <field name="return_condition" string="Return Condition" invisible="state not in ['returned','done']"/>
+              </group>
+            </page>
+
+            <page string="Product Information">
+              <group string="Product Details" col="4">
+                <field name="product_id" invisible="1"/>
+                <div>
+                  <strong>
+                    <span class="o_form_label">Product:</span>
+                  </strong>
+                  <field name="product_id" nolabel="1" readonly="1" options="{'no_open': True}"/>
+                </div>
+              </group>
+
+              <div invisible="product_id == False">
+                <h3>Setup Instructions</h3>
+                <div class="alert alert-info" role="alert"/>
+              </div>
+            </page>
+          </notebook>
+        </sheet>
+      </form>
+    </field>
+  </record>
+
+  <!-- Calendar View -->
+  <record id="view_rental_order_calendar" model="ir.ui.view">
+    <field name="name">rental.order.calendar</field>
+    <field name="model">rental.order</field>
+    <field name="arch" type="xml">
+      <calendar string="Rental Orders" date_start="start_date" date_stop="end_date" color="customer_id">
+        <field name="customer_id"/>
+        <field name="product_id"/>
+      </calendar>
+    </field>
+  </record>
+
+  <!-- Kanban View -->
+  <record id="view_rental_order_kanban" model="ir.ui.view">
+    <field name="name">rental.order.kanban</field>
+    <field name="model">rental.order</field>
+    <field name="arch" type="xml">
+      <kanban default_group_by="state">
+        <field name="name"/>
+        <field name="customer_id"/>
+        <field name="product_id"/>
+        <field name="start_date"/>
+        <field name="end_date"/>
+        <field name="total_price"/>
+        <field name="state"/>
+        <field name="payment_status"/>
+        <templates>
+          <t t-name="kanban-box">
+            <div class="oe_kanban_card oe_kanban_global_click">
+              <div class="oe_kanban_content">
+                <div class="o_kanban_record_title">
+                  <field name="name"/>
+                </div>
+                <div class="o_kanban_record_subtitle">
+                  <i class="fa fa-user"/>
+                  <field name="customer_id"/>
+                </div>
+                <div class="o_kanban_record_subtitle">
+                  <i class="fa fa-cube"/>
+                  <field name="product_id"/>
+                </div>
+                <div class="oe_kanban_bottom_left">
+                  <span>
+                    <i class="fa fa-calendar"/>
+                    <t t-esc="record.start_date.value"/>
+ -
+                    <t t-esc="record.end_date.value"/>
+                  </span>
+                </div>
+                <div class="oe_kanban_bottom_right">
+                  <span class="badge badge-pill badge-info">
+                    $                    <t t-esc="record.total_price.value"/>
+                  </span>
+                  <span class="badge badge-pill" t-att-class="record.payment_status.value == 'paid' ? 'badge-success' : 
+                                     record.payment_status.value == 'partial' ? 'badge-warning' : 'badge-danger'">
+                    <t t-esc="record.payment_status.value"/>
+                  </span>
+                </div>
+              </div>
+            </div>
+          </t>
+        </templates>
+      </kanban>
+    </field>
+  </record>
+
+  <!-- Pivot View -->
+  <record id="view_rental_order_pivot" model="ir.ui.view">
+    <field name="name">rental.order.pivot</field>
+    <field name="model">rental.order</field>
+    <field name="arch" type="xml">
+      <pivot string="Rental Analysis">
+        <field name="customer_id" type="row"/>
+        <field name="start_date" type="col" interval="month"/>
+        <field name="total_price" type="measure"/>
+        <field name="rental_days" type="measure"/>
+      </pivot>
+    </field>
+  </record>
+
+  <!-- Graph View -->
+  <record id="view_rental_order_graph" model="ir.ui.view">
+    <field name="name">rental.order.graph</field>
+    <field name="model">rental.order</field>
+    <field name="arch" type="xml">
+      <graph string="Rental Revenue" type="bar">
+        <field name="start_date" type="row" interval="month"/>
+        <field name="total_price" type="measure"/>
+      </graph>
+    </field>
+  </record>
+
+</odoo>
