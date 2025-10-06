@@ -189,7 +189,7 @@ class RentalProduct(models.Model):
             'type': 'ir.actions.act_window',
             'name': f'{self.name} - Rental History',
             'res_model': 'rental.order',
-            'view_mode': 'tree,form',
+            'view_mode': 'list,form',
             'domain': [('product_id', '=', self.id)],
             'context': {'default_product_id': self.id},
         }

@@ -107,7 +107,7 @@ class RentalCustomer(models.Model):
             'type': 'ir.actions.act_window',
             'name': f'{self.name} - Rental Orders',
             'res_model': 'rental.order',
-            'view_mode': 'tree,form',
+            'view_mode': 'list, form',
             'domain': [('customer_id', '=', self.id)],
             'context': {'default_customer_id': self.id},
         }

@@ -9,8 +9,7 @@
         <field name="model">rental.customer</field>
         <field name="arch" type="xml">
             <search>
-                <field name="name" string="Customer"
-                       filter_domain="['|', ('name', 'ilike', self), ('customer_code', 'ilike', self)]"/>
+                <field name="name" string="Customer" filter_domain="['|', ('name', 'ilike', self), ('customer_code', 'ilike', self)]"/>
                 <field name="email"/>
                 <field name="phone"/>
                 <field name="city"/>
@@ -38,9 +37,7 @@
         <field name="name">rental.customer.list</field>
         <field name="model">rental.customer</field>
         <field name="arch" type="xml">
-            <list decoration-muted="active == False"
-                  decoration-success="rental_count > 5"
-                  decoration-info="rental_count > 0">
+            <list decoration-muted="active == False" decoration-success="rental_count > 5" decoration-info="rental_count > 0">
                 <field name="customer_code"/>
                 <field name="name"/>
                 <field name="email"/>
@@ -64,18 +61,13 @@
             <form>
                 <header>
                     <!-- Action Buttons -->
-                    <button name="action_view_rental_orders"
-                            type="object"
-                            string="View Rentals"
-                            class="btn-primary"
-                            invisible="rental_count == 0"/>
+                    <button name="action_view_rental_orders" type="object" string="View Rentals" class="btn-primary" invisible="rental_count == 0"/>
                 </header>
 
                 <sheet>
                     <!-- Status Bar -->
                     <div class="oe_button_box" name="button_box">
-                        <button name="action_view_rental_orders" type="object"
-                                class="oe_stat_button" icon="fa-list">
+                        <button name="action_view_rental_orders" type="object" class="oe_stat_button" icon="fa-list">
                             <field name="rental_count" widget="statinfo" string="Rentals"/>
                         </button>
                     </div>
@@ -95,11 +87,8 @@
                     <group>
                         <group>
                             <field name="customer_type" widget="radio" options="{'horizontal': true}"/>
-                            <field name="company_name"
-                                   invisible="customer_type != 'company'"
-                                   required="customer_type == 'company'"/>
-                            <field name="tax_id"
-                                   invisible="customer_type != 'company'"/>
+                            <field name="company_name" invisible="customer_type != 'company'" required="customer_type == 'company'"/>
+                            <field name="tax_id" invisible="customer_type != 'company'"/>
                         </group>
                         <group>
                             <field name="rating" widget="priority"/>
@@ -143,10 +132,7 @@
                                     <field name="product_id"/>
                                     <field name="start_date"/>
                                     <field name="end_date"/>
-                                    <field name="state"
-                                           decoration-success="state == 'done'"
-                                           decoration-warning="state == 'ongoing'"
-                                           decoration-info="state == 'confirmed'"/>
+                                    <field name="state" decoration-success="state == 'done'" decoration-warning="state == 'ongoing'" decoration-info="state == 'confirmed'"/>
                                     <field name="total_price" widget="monetary"/>
                                 </list>
                             </field>
@@ -187,14 +173,14 @@
                     <t t-name="kanban-box">
                         <div class="oe_kanban_card oe_kanban_global_click">
                             <div class="o_kanban_image">
-                                <i class="fa fa-user-circle fa-3x"
-                                   t-att-style="'color: ' + (record.customer_type.raw_value == 'company' ? '#875A7B' : '#17a2b8')"/>
+                                <i class="fa fa-user-circle fa-3x" t-att-style="'color: ' + (record.customer_type.raw_value == 'company' ? '#875A7B' : '#17a2b8')"/>
                             </div>
                             <div class="oe_kanban_details">
                                 <strong class="o_kanban_record_title">
                                     <field name="name"/>
                                     <span t-if="record.customer_code.value" class="text-muted">
-                                        [<t t-esc="record.customer_code.value"/>]
+                                        [                                        <t t-esc="record.customer_code.value"/>
+]
                                     </span>
                                 </strong>
                                 <div class="o_kanban_record_subtitle">
@@ -206,13 +192,12 @@
                                     <field name="phone"/>
                                 </div>
                                 <div class="oe_kanban_bottom_left">
-                                    <span class="badge badge-pill badge-info"
-                                          t-if="record.rental_count.value > 0">
-                                        <t t-esc="record.rental_count.value"/> Rentals
+                                    <span class="badge badge-pill badge-info" t-if="record.rental_count.value > 0">
+                                        <t t-esc="record.rental_count.value"/>
+ Rentals
                                     </span>
-                                    <span class="badge badge-pill badge-success"
-                                          t-if="record.total_spent.value > 0">
-                                        $<t t-esc="record.total_spent.value"/>
+                                    <span class="badge badge-pill badge-success" t-if="record.total_spent.value > 0">
+                                        $                                        <t t-esc="record.total_spent.value"/>
                                     </span>
                                 </div>
                                 <div class="oe_kanban_bottom_right">

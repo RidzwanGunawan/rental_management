@@ -45,6 +45,7 @@
         'views/rental_customer_views.xml',  
         'views/rental_product_views.xml',
         'views/rental_order_views.xml',
+        'views/rental_payment_wizard_views.xml',
         'views/rental_menu_views.xml',    
     ],
     

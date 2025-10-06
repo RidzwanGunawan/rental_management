@@ -249,7 +249,7 @@
                                     <span t-if="record.brand.value"> - <t t-esc="record.brand.value"/></span>
                                 </div>
                                 <div class="oe_kanban_bottom_left">
-                                    <span class="o_kanban_record_title">$<t t-esc="record.price_per_day.value"/>/day</span>
+                                    <span class="o_kanban_record_title">Rp.<t t-esc="record.price_per_day.value"/>/day</span>
                                 </div>
                                 <div class="oe_kanban_bottom_right">
                                     <span class="badge badge-pill" 
