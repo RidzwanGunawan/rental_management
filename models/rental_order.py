@@ -13,6 +13,7 @@ class RentalOrder(models.Model):
     name = fields.Char(string="Order Number", readonly=True, copy=False, default='New')
     customer_id = fields.Many2one("rental.customer", string="Customer", required=True)
     product_id = fields.Many2one("rental.product", string="Product", required=True)
+    quantity = fields.Integer(string="Quantity", default=1)
     
     # Date Management (YANG SUDAH ADA + PERBAIKAN)
     start_date = fields.Date(string="Start Date", required=True)  # Tetap Date, bukan Datetime

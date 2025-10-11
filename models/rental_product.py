@@ -88,8 +88,9 @@ class RentalProduct(models.Model):
     
     # Internal notes (TAMBAHAN BARU)
     internal_notes = fields.Text(string="Internal Notes")
-    
     image_1920 = fields.Image("Image", max_width=1920, max_height=1920)
+    quantity = fields.Integer(string="Quantity Available", default=1)
+    
     
     @api.model
     def create(self, vals):
@@ -214,3 +215,5 @@ class RentalProduct(models.Model):
                 name = f"{name} ({product.status.title()})"
             result.append((product.id, name))
         return result
+    
+    

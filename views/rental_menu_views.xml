@@ -107,7 +107,7 @@
     <!-- ========== MAIN MENU STRUCTURE ========== -->
 
     <!-- Root Menu -->
-    <menuitem id="menu_rental_root" name="Rental Management" sequence="10"/>
+    <menuitem id="menu_rental_root" name="Rental Management" sequence="10" web_icon="rental_management,static/description/icon.png"/>
 
     <!-- Operations Menu -->
     <menuitem id="menu_rental_operations" name="Operations" parent="menu_rental_root" sequence="10"/>

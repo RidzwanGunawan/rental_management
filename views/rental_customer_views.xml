@@ -184,8 +184,7 @@
                                     </span>
                                 </strong>
                                 <div class="o_kanban_record_subtitle">
-                                    <i class="fa fa-envelope"/>
-                                    <field name="email"/>
+                                    <i class="fa fa-envelope"/> <field name="email"/>
                                 </div>
                                 <div class="o_kanban_record_subtitle">
                                     <i class="fa fa-phone"/>

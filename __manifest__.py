@@ -42,17 +42,19 @@
         'data/sequences.xml',
         
         # Views (URUTAN PENTING!)
+        'views/rental_menu_views.xml',    
         'views/rental_customer_views.xml',  
         'views/rental_product_views.xml',
         'views/rental_order_views.xml',
         'views/rental_payment_wizard_views.xml',
-        'views/rental_menu_views.xml',    
     ],
     
     # Demo Data (optional)
-    'demo': [
-        # 'data/demo_data.xml',
-    ],
+    # 'demo': [
+    #     'data/demo_customers.xml',
+    #     'data/demo_products.xml',
+    #     'data/demo_orders.xml',
+    # ],
     
     # Static files
     'assets': {
@@ -75,6 +77,6 @@
     # Images
     'images': [
         # 'static/description/banner.png',
-        # 'static/description/icon.png',
+        'static/description/icon.png',
     ],
 }
